@@ -3,6 +3,9 @@ import numpy as np
 
 from com_b4_rght import complex_before_right
 
+N = 5
+M = 9
+U = 12
 df_tech = complex_before_right()
 
 class indicator():
@@ -24,7 +27,7 @@ class indicator():
         else:
             return (c_array.index[-1] - ema(c_array[:-1])) * mul + ema(c_array[:-1])
      
-    def price_oscillator(c_array, M=9, N=12):
+    def price_oscillator(c_array, M=M, N=U):
         if M > len(c_array) or N > len(c_array):
             raise ValueError('M or N is bigger than the number of days')
         return (ema(c_array[-M:]) - ema(c_array[-N:])) / ema(c_array[-N:])
@@ -59,7 +62,7 @@ def get_x_value():
     # #data * #indicator
     X = np.vstack((x_1, x_2, x_3, x_4)).T
     # TODO: scale the X  
-    return X
+    return X[U:]
 
 def get_y_value():
     groups = df_tech.groupby(['stock_id', 'date'])
@@ -81,5 +84,5 @@ def get_y_value():
     # up or not
     df_y['result'] = df_y.apply(lambda row: up_or_not(row['close'], row['open']), axis= 1)
 
-    return df_y.result.value
+    return df_y[U:].result.value
 
