@@ -6,7 +6,7 @@ from os.path import isfile, join
 
 p_stock_id = '股票交易代码'
 p_stock_title = '股票名称'
-p_cash_divid_pt = '税前派现金额（人民币）（元）（1：X）'
+p_cash_divid_bt = '税前派现金额（人民币）（元）（1：X）'
 p_date = '除权日'
 p_cash_divid_at = '税后派现金额（人民币）（元）（1：X）'
 p_stock_divid_rat = '送股比例（1：X）'
@@ -15,7 +15,7 @@ p_reser_rat = '送转比例（1：X）'
 p_allot_prc = '配股价格（元）'
 p_allot_rat = '实际配股比例'
 
-STOCK_LIST = ['000002', '000099', '000004', '000005', '000006', '399300'] 
+STOCK_LIST = ['000011'] 
 
 def read_tech(path = '/home/lcc/dataset/kline_5minute/sz/'):
     files = [f for f in listdir(path) if isfile(join(path, f))]
