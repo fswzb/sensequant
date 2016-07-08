@@ -1,3 +1,6 @@
+import numpy as np
+import pandas as pd 
+
 def scalify(l):
     if type(l) != np.ndarray:
         return l
