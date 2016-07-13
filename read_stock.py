@@ -52,7 +52,22 @@ def read_tech(path = '/home/lcc/dataset/kline_5minute/sz/'):
         else:
             df_tech = pd.concat([df_tech, df])
     df_tech['date'] = pd.to_datetime(df_tech.date)
-    return df_tech
+    groups = df_tech.groupby(['stock_id', 'date'])
+    col = ['stock_id', 'date', 'high', 'low', 'open', 'close']
+    df_y = pd.DataFrame()
+    for name, group in groups:
+        if group.high.max() <= 0:
+            continue
+        stock_id = name[0]
+        date = name[1]
+        high = group.high.max()
+        low = group[group['low']>0].low.min()
+        open_ = group[(group['open'].astype(np.float))>0].iloc[0]['open']
+        close = group.iloc[-1]['close']
+        row = pd.Series([stock_id, date, high, low, open_, close])
+        df_y = df_y.append(row, ignore_index=True)
+    df_y.columns = col
+    return df_y
 
 def read_panel(fname='/home/lcc/dataset/stock_info'):
     df_panel = pd.read_csv(fname)
@@ -60,10 +75,10 @@ def read_panel(fname='/home/lcc/dataset/stock_info'):
     df_panel[p_date] = pd.to_datetime(df_panel[p_date])
     return df_panel
 
-def read_finance(fname):
+def read_finance(fname='/home/lcc/dataset/kline_5minute/stock_finance.txt'):
     df_finance = pd.read_csv(fname, dtype={p_stock_id_: str})
     df_finance = df_finance.drop('每股净资产(元).1', 1)
-    #df_finance = df_finance[df_finance[p_stock_id_].isin(STOCK_LIST)].reset_index(drop=True)
+    df_finance = df_finance[df_finance[p_stock_id_].isin(STOCK_LIST)].reset_index(drop=True)
     df_finance[p_date_] = pd.to_datetime(df_finance[p_date_])
     df_finance['year'] = df_finance[p_date_].apply(lambda time: time.year)
     df_finance['month'] = df_finance[p_date_].apply(lambda time: time.month)
@@ -73,3 +88,5 @@ def read_finance(fname):
 def read_share(fname='/home/lcc/dataset/kline_5minute/stock_share.txt'):
     df_share = pd.read_csv(fname, dtype={p_stock_id_: str})
     df_share = df_share[df_share[p_stock_id_].isin(STOCK_LIST)]
+    df_share[p_date_] = pd.to_datetime(df_share[p_date_])
+    return df_share 
