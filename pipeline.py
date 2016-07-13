@@ -13,7 +13,7 @@ if __name__ == "__main__":
     # and the full path of the panel data
     STOCK_LIST = [line.rstrip() for line in open('hushen_300_.txt')]
     TURN_DATE = pd.to_datetime('2016-01-01')
-    for stock in STOCK_LIST:
+    for stock in STOCK_LIST[STOCK_LIST.index('600000'):]:
         print (stock)
         reader = READ_DATA(stock)
         path = '/home/lcc/dataset/kline_5minute/sz/'
@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
         df_tech = reader.read_tech(path)
         df_panel = reader.read_panel()
-        if np.max(df_tech.date) < TURN_DATE:
+        if df_tech.empty or np.max(df_tech.date) < TURN_DATE:
             continue
 
         # complex before right

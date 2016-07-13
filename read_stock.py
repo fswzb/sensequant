@@ -53,6 +53,10 @@ class READ_DATA():
                 df_tech = df
             else:
                 df_tech = pd.concat([df_tech, df])
+
+        if df_tech.empty:
+            return df_tech
+
         df_tech['date'] = pd.to_datetime(df_tech.date)
         groups = df_tech.groupby(['stock_id', 'date'])
         col = ['stock_id', 'date', 'high', 'low', 'open', 'close']

@@ -184,7 +184,7 @@ class INDICATOR():
         print (np.shape(circuMarketVal))
         return np.vstack((slopeNday, percentileNday, returnNday, ema, pe, pb, currCashRat, aveCashRat, currDebtRat, aveDebtRat, marketVal, circuMarketVal))
     
-    def tomorrow_trend(self, close1, close2, threshold=0.05):
+    def _tomorrow_trend(self, close1, close2, threshold=0.05):
         # close1: tomorrow
         # close2: today
         trend = (close1 - close2) / close2
@@ -194,8 +194,9 @@ class INDICATOR():
             return 0
         else:
             return -1
+            
     def _get_trend(self):
-        return self.df_y[self.N:-1].apply(lambda row: self.tomorrow_trend(self.df_y.loc[row.name+1, 'close'], row.close), axis=1).values
+        return self.df_y[self.N:-1].apply(lambda row: self._tomorrow_trend(self.df_y.loc[row.name+1, 'close'], row.close), axis=1).values
 
     def save_indicators(self, turnDate):
         # shape(output) should be num_data * (num_ind + 1)
