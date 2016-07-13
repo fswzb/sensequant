@@ -33,7 +33,6 @@ class INDICATOR():
         self.df_y = df_y
         self.df_finance = df_finance
         self.df_share = df_share
-
         self.df_finance['average_asset_ratio_in_last_one_year'] = df_finance.apply(lambda row: np.average(df_finance.loc[row.name:row.name+4, p_asset_liability_ratio_].values), axis=1)
         self.df_finance['average_cash_ratio_in_last_one_year'] = df_finance.apply(lambda row: np.average(df_finance.loc[row.name:row.name+4, p_epcf_].values), axis=1)
         self.df_finance['eps_in_past_one_year'] = self.df_finance.apply(lambda row: self._get_eps_in_one_year(self.df_finance[row.name:row.name+5]), 1)
@@ -198,9 +197,8 @@ class INDICATOR():
     def _get_trend(self):
         return self.df_y[self.N:-1].apply(lambda row: self.tomorrow_trend(self.df_y.loc[row.name+1, 'close'], row.close), axis=1).values
 
-    def save_indicators(self):
+    def save_indicators(self, turnDate):
         # shape(output) should be num_data * (num_ind + 1)
-        #outfile = TemporaryFile()
         indicators = self.implement_indicator()
         indicators = indicators[:, :-1]
         trend = self._get_trend()
@@ -208,5 +206,16 @@ class INDICATOR():
         print (np.shape(indicators))
         print (np.shape(trend))
         matrix = np.hstack((indicators.T, trend))
-        np.savetxt('matrix.txt', matrix)
-        return 
+        msk = self.df_y[self.N:-1].date < turnDate
+        (train, test) = (matrix[msk], matrix[~msk])
+        with open('train.txt', 'ab') as f1:            
+            np.savetxt(f1, train)
+        with open('test.txt', 'ab') as f2:
+            np.savetxt(f2, test)
+        with open('record.txt', 'a') as f3:
+            f3.write(scalify(self.df_y.stock_id.unique())\
+                    + '\t'\
+                    + str(len(test))\
+                    + '\n'\
+                    )
+        return

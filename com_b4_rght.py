@@ -1,8 +1,6 @@
 import pandas as pd 
 import numpy as np
 
-from read_stock import read_tech, read_panel
-
 p_stock_id = '股票交易代码'
 p_stock_title = '股票名称'
 p_cash_divid_bt = '税前派现金额（人民币）（元）（1：X）'

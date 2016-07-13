@@ -37,56 +37,59 @@ p_equity_ = '总股本(亿股)'
 p_limit_equity_ = '限售股份(亿股)'
 p_a_share_ = '流通A股(亿股)'
 
-STOCK_LIST = ['000011'] 
+class READ_DATA():
+    def __init__(self, stockId):
+        self.id_ = stockId
 
-def read_tech(path = '/home/lcc/dataset/kline_5minute/sz/'):
-    files = [f for f in listdir(path) if isfile(join(path, f))]
-    df_tech = None
-    for f in files:
-        date = f.split('.')[0]
-        df = pd.read_csv(path+f, dtype={'stock_id': str})
-        df = df[df['stock_id'].isin(STOCK_LIST)]
-        df['date'] = date
-        if df_tech is None:
-            df_tech = df
-        else:
-            df_tech = pd.concat([df_tech, df])
-    df_tech['date'] = pd.to_datetime(df_tech.date)
-    groups = df_tech.groupby(['stock_id', 'date'])
-    col = ['stock_id', 'date', 'high', 'low', 'open', 'close']
-    df_y = pd.DataFrame()
-    for name, group in groups:
-        if group.high.max() <= 0:
-            continue
-        stock_id = name[0]
-        date = name[1]
-        high = group.high.max()
-        low = group[group['low']>0].low.min()
-        open_ = group[(group['open'].astype(np.float))>0].iloc[0]['open']
-        close = group.iloc[-1]['close']
-        row = pd.Series([stock_id, date, high, low, open_, close])
-        df_y = df_y.append(row, ignore_index=True)
-    df_y.columns = col
-    return df_y
+    def read_tech(self, path = '/home/lcc/dataset/kline_5minute/sz/'):
+        files = [f for f in listdir(path) if isfile(join(path, f))]
+        df_tech = None
+        for f in files:
+            date = f.split('.')[0]
+            df = pd.read_csv(path+f, dtype={'stock_id': str})
+            df = df[df['stock_id']==self.id_]
+            df['date'] = date
+            if df_tech is None:
+                df_tech = df
+            else:
+                df_tech = pd.concat([df_tech, df])
+        df_tech['date'] = pd.to_datetime(df_tech.date)
+        groups = df_tech.groupby(['stock_id', 'date'])
+        col = ['stock_id', 'date', 'high', 'low', 'open', 'close']
+        df_y = pd.DataFrame()
+        for name, group in groups:
+            if group.high.max() <= 0:
+                continue
+            stock_id = name[0]
+            date = name[1]
+            high = group.high.max()
+            low = group[group['low']>0].low.min()
+            open_ = group[(group['open'].astype(np.float))>0].iloc[0]['open']
+            close = group.iloc[-1]['close']
+            row = pd.Series([stock_id, date, high, low, open_, close])
+            df_y = df_y.append(row, ignore_index=True)
+        df_y.columns = col
 
-def read_panel(fname='/home/lcc/dataset/stock_info'):
-    df_panel = pd.read_csv(fname)
-    df_panel = df_panel[(df_panel[p_stock_id].isin(STOCK_LIST))]
-    df_panel[p_date] = pd.to_datetime(df_panel[p_date])
-    return df_panel
+        return df_y
 
-def read_finance(fname='/home/lcc/dataset/kline_5minute/stock_finance.txt'):
-    df_finance = pd.read_csv(fname, dtype={p_stock_id_: str})
-    df_finance = df_finance.drop('每股净资产(元).1', 1)
-    df_finance = df_finance[df_finance[p_stock_id_].isin(STOCK_LIST)].reset_index(drop=True)
-    df_finance[p_date_] = pd.to_datetime(df_finance[p_date_])
-    df_finance['year'] = df_finance[p_date_].apply(lambda time: time.year)
-    df_finance['month'] = df_finance[p_date_].apply(lambda time: time.month)
-    df_finance['day'] = df_finance[p_date_].apply(lambda time: time.day)
-    return df_finance
+    def read_panel(self, fname='/home/lcc/dataset/stock_info'):
+        df_panel = pd.read_csv(fname)
+        df_panel = df_panel[(df_panel[p_stock_id]==self.id_)]
+        df_panel[p_date] = pd.to_datetime(df_panel[p_date])
+        return df_panel
 
-def read_share(fname='/home/lcc/dataset/kline_5minute/stock_share.txt'):
-    df_share = pd.read_csv(fname, dtype={p_stock_id_: str})
-    df_share = df_share[df_share[p_stock_id_].isin(STOCK_LIST)]
-    df_share[p_date_] = pd.to_datetime(df_share[p_date_])
-    return df_share 
+    def read_finance(self, fname='/home/lcc/dataset/kline_5minute/stock_finance.txt'):
+        df_finance = pd.read_csv(fname, dtype={p_stock_id_: str})
+        df_finance = df_finance.drop('每股净资产(元).1', 1)
+        df_finance = df_finance[df_finance[p_stock_id_]==self.id_].reset_index(drop=True)
+        df_finance[p_date_] = pd.to_datetime(df_finance[p_date_])
+        df_finance['year'] = df_finance[p_date_].apply(lambda time: time.year)
+        df_finance['month'] = df_finance[p_date_].apply(lambda time: time.month)
+        df_finance['day'] = df_finance[p_date_].apply(lambda time: time.day)
+        return df_finance
+
+    def read_share(self, fname='/home/lcc/dataset/kline_5minute/stock_share.txt'):
+        df_share = pd.read_csv(fname, dtype={p_stock_id_: str})
+        df_share = df_share[df_share[p_stock_id_]==self.id_]
+        df_share[p_date_] = pd.to_datetime(df_share[p_date_])
+        return df_share 
