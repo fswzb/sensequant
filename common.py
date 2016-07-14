@@ -38,3 +38,6 @@ def select_val_b4_date(df, date, colname):
     # default: the column of the date in the df is p_date_
     lb = np.max(df[df[p_date_]<date][p_date_])
     return df[df[p_date_]==lb][colname].values
+def record_error_msge(id_, msge, fname='errorLog.txt'):
+    with open(fname, 'a') as f:
+        f.write(id_+'\t'+msge+'\n')

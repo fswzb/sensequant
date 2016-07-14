@@ -1,6 +1,6 @@
 import pandas as pd 
 import numpy as np 
-from common import scalify, lower_bound, select_val_b4_date
+from common import scalify, lower_bound, select_val_b4_date, record_error_msge
 from tempfile import TemporaryFile
 
 p_exchange_ = '交易所简称'
@@ -36,7 +36,7 @@ class INDICATOR():
         self.df_finance['average_asset_ratio_in_last_one_year'] = df_finance.apply(lambda row: np.average(df_finance.loc[row.name:row.name+4, p_asset_liability_ratio_].values), axis=1)
         self.df_finance['average_cash_ratio_in_last_one_year'] = df_finance.apply(lambda row: np.average(df_finance.loc[row.name:row.name+4, p_epcf_].values), axis=1)
         self.df_finance['eps_in_past_one_year'] = self.df_finance.apply(lambda row: self._get_eps_in_one_year(self.df_finance[row.name:row.name+5]), 1)
-
+        self.id_ = scalify(self.df_y.stock_id.unique())
 
     def _slope_N_day(self, c0, cN, N):
         return ((c0 - cN) / cN) / N
@@ -202,19 +202,33 @@ class INDICATOR():
         # shape(output) should be num_data * (num_ind + 1)
         indicators = self.implement_indicator()
         indicators = indicators[:, :-1]
+        if np.isnan(indicators).any():
+            print (
+                    'THIS SON OF BITCH HAS NULL VAL',
+                    self.id_)
+            record_error_msge(self.id_, 'has null val')
+
         trend = self._get_trend()
         trend = trend.reshape(len(trend), 1)
         print (np.shape(indicators))
         print (np.shape(trend))
         matrix = np.hstack((indicators.T, trend))
+
         msk = self.df_y[self.N:-1].date < turnDate
+        if msk.all() or not msk.any():
+            record_error_msge(self.id_, 'fail to split train and test')
+            return 
+        msk = msk.values
         (train, test) = (matrix[msk], matrix[~msk])
+        assert train != test
+
         with open('train.txt', 'ab') as f1:            
             np.savetxt(f1, train)
         with open('test.txt', 'ab') as f2:
             np.savetxt(f2, test)
         with open('record.txt', 'a') as f3:
-            f3.write(scalify(self.df_y.stock_id.unique())\
+            f3.write(\
+                    self.id_\
                     + '\t'\
                     + str(len(test))\
                     + '\n'\
