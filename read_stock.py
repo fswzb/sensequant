@@ -41,7 +41,7 @@ class READ_DATA():
     def __init__(self, stockId):
         self.id_ = stockId
 
-    def read_tech(self, path = '/home/lcc/dataset/kline_5minute/sz/'):
+    def read_tech(self, path='/home/lcc/dataset/kline_5minute/sz/'):
         files = [f for f in listdir(path) if isfile(join(path, f))]
         df_tech = None
         for f in files:
@@ -58,6 +58,8 @@ class READ_DATA():
             return df_tech
 
         df_tech['date'] = pd.to_datetime(df_tech.date)
+        #14000 => 14.000
+        df_tech[['high', 'low', 'open', 'close']] = df_tech[['high', 'low', 'open', 'close']].apply(lambda x: x/1000)
         groups = df_tech.groupby(['stock_id', 'date'])
         col = ['stock_id', 'date', 'high', 'low', 'open', 'close']
         df_y = pd.DataFrame()
@@ -75,6 +77,37 @@ class READ_DATA():
         df_y.columns = col
 
         return df_y
+
+    def fast_read_tech(self, path='/home/lcc/dataset/kline_5minute/data/'):
+        files = [f for f in listdir(path) if isfile(join(path, f))]
+        df_tech = None
+        for f in files:
+            if f.split('.')[0] == self.id_:
+                df_tech = pd.read_csv(path+f, dtype={'stock_id': str})
+                df_tech['date'] = pd.to_datetime(df_tech.date, format='%Y%m%d')
+                #14000 => 14.000
+                df_tech[['high', 'low', 'open', 'close']] = df_tech[['high', 'low', 'open', 'close']].apply(lambda x: x/1000)
+                groups = df_tech.groupby('date')
+                col = ['stock_id', 'date', 'high', 'low', 'open', 'close']
+                df_y = pd.DataFrame()
+                for name, group in groups:
+                    if group.high.max() <= 0:
+                        continue
+                    stock_id = self.id_
+                    date = name
+                    high = group.high.max()
+                    low = group[group['low']>0].low.min()
+                    open_ = group[(group['open'].astype(np.float))>0].iloc[0]['open']
+                    close = group.iloc[-1]['close']
+                    row = pd.Series([stock_id, date, high, low, open_, close])
+                    df_y = df_y.append(row, ignore_index=True)
+                df_y.columns = col 
+            else:
+                continue
+        if df_tech is None:
+            return df_tech
+        else:
+            return df_y               
 
     def read_panel(self, fname='/home/lcc/dataset/stock_info'):
         df_panel = pd.read_csv(fname)

@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np 
 from common import scalify, lower_bound, select_val_b4_date, record_error_msge
 from tempfile import TemporaryFile
+import matplotlib.pyplot as plt
 
 p_exchange_ = '交易所简称'
 p_stock_id_ = '股票代码'
@@ -89,9 +90,9 @@ class INDICATOR():
 
     def construct_percentile_N_day(self):
         return self.df_y.loc[self.N:].apply(lambda row: self._percentile_N_day(row['close'],\
-                                                      self.df_y.loc[row.name-self.N:row.name+1, 'high'].max(),\
-                                                      self.df_y.loc[row.name-self.N:row.name+1, 'low'].min()\
-                                                      ), axis=1)
+                                                        self.df_y.loc[row.name-self.N:row.name+1, 'high'].max(),\
+                                                        self.df_y.loc[row.name-self.N:row.name+1, 'low'].min()\
+                                            ), axis=1)
 
     def construct_return_N_day(self):
         return self.df_y.loc[self.N:].apply(lambda row: self._return_N_day(row.close, self.df_y.loc[row.name-self.N, 'close']), axis=1) 
@@ -113,10 +114,12 @@ class INDICATOR():
         return pe / avepe
     
     def pb_ratio(self):
-        return self.df_y[self.N:].apply(lambda row: scalify(row.close \
-                                            / self.df_finance[\
+        return self.df_y[self.N:].apply(lambda row: scalify(\
+                                              self.df_finance[\
                                               (self.df_finance[p_date_]==lower_bound(self.df_finance, row.date))\
-                                              &(~self.df_finance[p_bvps_].isnull())][p_bvps_].values)\
+                                              &(~self.df_finance[p_bvps_].isnull())][p_bvps_].values\
+                                              / row.close)
+
                                         , axis=1)
     
     def relative_pb_ratio(pb, avepb):
@@ -157,31 +160,30 @@ class INDICATOR():
         bThisYear = df[df.year==np.max(df.year.values)].loc[0, p_earn_per_share_]
         return scalify(bLastYear+bThisYear)
 
+    def save_img(self, arr, fname, folder='graph/'):
+        fig,ax = plt.subplots()  #create a new figure
+        ax.plot(arr)
+        fig.savefig(folder+fname)
+
     def implement_indicator(self):
         slopeNday = self.construct_slope_N_day()
-        print (np.shape(slopeNday))
         percentileNday = self.construct_percentile_N_day()
-        print (np.shape(percentileNday))
         returnNday = self.construct_return_N_day()
-        print (np.shape(returnNday))
+        #self.save_img(returnNday, self.id_+'_'+'returnNday.png')
         ema = self.construct_ema()
-        print (np.shape(ema))
         pe = self.pe_ratio()
-        print (np.shape(pe))
+#        self.save_img(pe, self.id_+'_'+'pe.png')
         pb = self.pb_ratio()
-        print (np.shape(pb))
+#        self.save_img(pb, self.id_+'_'+'pb.png') 
         currCashRat = self.current_cashflow_ratio()
-        print (np.shape(currCashRat))
+#        self.save_img(currCashRat, self.id_+'_'+'currCashRat.png')        
         aveCashRat =  self.average_cashflow_ratio()
-        print (np.shape(aveCashRat))
         currDebtRat = self.current_debt_ratio()
-        print (np.shape(currDebtRat))
         aveDebtRat =  self.average_debt_ratio()
-        print (np.shape(aveDebtRat))
         marketVal = self.market_capitalization()
-        print (np.shape(marketVal))
+        #self.save_img(marketVal, self.id_+'_'+'marketval.png')
         circuMarketVal = self.circulate_stock_value()
-        print (np.shape(circuMarketVal))
+        #self.save_img(circuMarketVal, self.id_+'_'+'circulmarketval.png')
         return np.vstack((slopeNday, percentileNday, returnNday, ema, pe, pb, currCashRat, aveCashRat, currDebtRat, aveDebtRat, marketVal, circuMarketVal))
     
     def _tomorrow_trend(self, close1, close2, threshold=0.05):
@@ -200,13 +202,17 @@ class INDICATOR():
 
     def save_indicators(self, turnDate):
         # shape(output) should be num_data * (num_ind + 1)
+
         indicators = self.implement_indicator()
+        
+        # filter the null val       
         indicators = indicators[:, :-1]
         if np.isnan(indicators).any():
             print (
                     'THIS SON OF BITCH HAS NULL VAL',
                     self.id_)
             record_error_msge(self.id_, 'has null val')
+            return
 
         trend = self._get_trend()
         trend = trend.reshape(len(trend), 1)
@@ -221,16 +227,9 @@ class INDICATOR():
         msk = msk.values
         (train, test) = (matrix[msk], matrix[~msk])
         assert train != test
-
         with open('train.txt', 'ab') as f1:            
             np.savetxt(f1, train)
         with open('test.txt', 'ab') as f2:
             np.savetxt(f2, test)
-        with open('record.txt', 'a') as f3:
-            f3.write(\
-                    self.id_\
-                    + '\t'\
-                    + str(len(test))\
-                    + '\n'\
-                    )
+        
         return
