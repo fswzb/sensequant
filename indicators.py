@@ -231,5 +231,4 @@ class INDICATOR():
             np.savetxt(f1, train)
         with open('test.txt', 'ab') as f2:
             np.savetxt(f2, test)
-        
         return

@@ -31,6 +31,9 @@ class ALGORITHM():
         return Y_
 
     def train(self, X_train, Y_train):
+        '''
+        output: predicted class: 0, 1, 2
+        '''
         inputs = Input(shape=(12,))
         x = Dense(24, activation='relu', W_regularizer=l2(0.01))(inputs)
         drop = Dropout(0.2)(x)
@@ -39,11 +42,18 @@ class ALGORITHM():
         model.compile(optimizer='adadelta',
                       loss='categorical_crossentropy')
         model.fit(X_train, Y_train, nb_epoch=1000)
-        return np.argmax(model.predict(X_test), axis=1)
+        pred = model.predict(X_test)
+        return (np.argmax(pred, axis=1),
+                np.max(pred, axis=1))
 
     def benchmark(self, X_train, Y_train, X_test):
+        '''
+        output: predicted class: -1, 0, 1
+        '''
         lr = linear_model.LogisticRegression()
-        return lr.fit(X_train, Y_train).predict(X_test)
+        model = lr.fit(X_train, Y_train)
+        return (model.predict(X_test),
+                np.max(model.predict_proba(X_test), axis=1))
 
     def evaluate(self, Y_pred, Y_true, method, fname='result.txt'):
         if method != 'NN' and method != 'LR':
@@ -52,17 +62,27 @@ class ALGORITHM():
             f.write(\
                     method\
                     + ':\n'\
-                    + classification_report(Y_pred, Y_true)
+                    + classification_report(Y_pred, Y_true)\
                     + '\n')
+        msk = Y_pred == Y_true
+        return msk.cumsum()[-1]/len(msk)
 
-        return 
- 
+    def combine_to_df(self, class_, prob):
+        return pd.DataFrame({'class_': class_, 'prob'; prob})
+
     def run(self):
         X_train, Y_train, X_test, Y_test = self.prepare_data()
         X_train_scale, X_test_scale = (self.preprocess_X(X_train), self.preprocess_X(X_test))
         Y_train_matrix = self.preprocess_Y(Y_train)
         predNN = self.train(X_train_scale, Y_train_matrix)
         predLR = self.benchmark(X_train_scale, Y_train, X_test_scale)
-        self.evaluate(predNN, Y_test, 'NN')
-        self.evaluate(predLR, Y_test, 'LR')
-        return
+        self.combine_to_df(predNN[0], predNN[1])\
+                                                .to_csv('predict_NN', index=False)
+        self.combine_to_df(predLR[0], predLR[1])\
+                                                .to_csv('predict_LR', index=False)
+
+        accNN = self.evaluate(predNN[0], np.argmax(Y_train_matrix, axis=1), 'NN')
+        accLR = self.evaluate(predLR[0], Y_test, 'LR')
+        print ('NN accuracy: ', accNN)
+        print ('LR accuracy: ', accLR)
+        return 

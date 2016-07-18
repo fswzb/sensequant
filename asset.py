@@ -6,7 +6,11 @@ class ASSET():
     """
         
     """ 
+
     def __init__(self, df, cash=100000, upThreshold=0.5, downThreshold=0.5):
+        '''
+            @df: stock_id, high, low, close, open, date, prob, class
+        '''
         self.df = df
         self.df.loc[1:, 'trend'] = df[1:].apply(lambda row: 1 if df.loc[row.name-1, 'close']<=14.3 else 0, axis=1)
         self.df = self.df[1:]
@@ -15,6 +19,19 @@ class ASSET():
         self._cash = cash 
         self._share = 0
 
+        self.df_test = df_test
+        self.df_model = df_model
+        self.WHOLE_PERIOD = whole_period 
+
+    def choose_10_stock(self, df_model, mode, n=10):
+        if mode != 0 and mode != 1: 
+            raise ValueError('Not efficient mode')
+        else:
+            msk = (df_model.class_==mode)&\
+                  (df_model.prob.isin(\
+                                      df_model.prob.sort(ascending=False, inplace=False).head(n)))
+            return df_model[msk]
+
     def _strategy(self, row, price):
         if row.trend == 1:
             invest = 100 * price
@@ -22,7 +39,7 @@ class ASSET():
                 return (0, 0)
             share = invest/row.open
             return (invest, share)
-        elif row.trend == 0:
+        elif row.trend == 0:         
             if self._share == 0:
                 return (0, 0)
             invest = -self._share * price
