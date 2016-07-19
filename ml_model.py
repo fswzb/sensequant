@@ -22,9 +22,9 @@ class ALGORITHM():
 
     def preprocess_Y(self, Y):
         Y_ = np.zeros((len(Y), 3))
-        msk1 = Y==-1
-        msk2 = Y==0
-        msk3 = Y==1
+        msk1 = Y==0
+        msk2 = Y==1
+        msk3 = Y==2
         Y_[msk1, 0] = 1
         Y_[msk2, 1] = 1
         Y_[msk3, 2] = 1
@@ -81,7 +81,7 @@ class ALGORITHM():
         self.combine_to_df(predLR[0], predLR[1])\
                                                 .to_csv('predict_LR', index=False)
 
-        accNN = self.evaluate(predNN[0], np.argmax(Y_train_matrix, axis=1), 'NN')
+        accNN = self.evaluate(predNN[0], np.argmax(Y_test_matrix, axis=1), 'NN')
         accLR = self.evaluate(predLR[0], Y_test, 'LR')
         print ('NN accuracy: ', accNN)
         print ('LR accuracy: ', accLR)

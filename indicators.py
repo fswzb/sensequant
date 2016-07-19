@@ -186,16 +186,16 @@ class INDICATOR():
         #self.save_img(circuMarketVal, self.id_+'_'+'circulmarketval.png')
         return np.vstack((slopeNday, percentileNday, returnNday, ema, pe, pb, currCashRat, aveCashRat, currDebtRat, aveDebtRat, marketVal, circuMarketVal))
     
-    def _tomorrow_trend(self, close1, close2, threshold=0.05):
+    def _tomorrow_trend(self, close1, close2, threshold=0):
         # close1: tomorrow
         # close2: today
         trend = (close1 - close2) / close2
         if trend > threshold:
-            return 1
+            return 2
         elif -threshold < trend < threshold:
-            return 0
+            return 1
         else:
-            return -1
+            return 0
             
     def _get_trend(self):
         return self.df_y[self.N:-1].apply(lambda row: self._tomorrow_trend(self.df_y.loc[row.name+1, 'close'], row.close), axis=1).values
