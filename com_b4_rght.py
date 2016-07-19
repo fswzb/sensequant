@@ -16,8 +16,6 @@ def adjust_price(price, cash_divid_at, reser_rat):
     return (price - float(cash_divid_at)) / (1 + float(reser_rat))
 
 def complex_before_right(df_tech, df_panel):
-    # 14000 => 14.00
-    df_tech[['high', 'low', 'open', 'close']] = df_tech[['high', 'low', 'open', 'close']].apply(lambda x: x/1000)
     # set index
     df_tech = df_tech.reset_index(drop=False)
     #df_benchmark = df_tech[df_tech['stock_id']=='399300']  

@@ -231,4 +231,6 @@ class INDICATOR():
             np.savetxt(f1, train)
         with open('test.txt', 'ab') as f2:
             np.savetxt(f2, test)
+        with open('record.txt', 'a') as f3:
+            f3.write(self.id_+'\t'+len(test)+'\n')
         return

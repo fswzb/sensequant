@@ -130,3 +130,15 @@ class READ_DATA():
         df_share = df_share[df_share[p_stock_id_]==self.id_]
         df_share[p_date_] = pd.to_datetime(df_share[p_date_])
         return df_share 
+
+    def read_dict(self, fname, symbol):
+        dict_ = {}
+        with open(fname) as f:
+            for line in f:
+                line = line.rstrip()
+                line = line.split(symbol)
+                dict_[line[0]] = float(line[1])
+        return dict_ 
+
+    def read_single_col(self, fname, ith, symbol):
+        return [line.rstrip().split(symbol)[ith] for line in open(fname)]
