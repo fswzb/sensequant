@@ -30,7 +30,7 @@ class ALGORITHM():
         Y_[msk3, 2] = 1
         return Y_
 
-    def train(self, X_train, Y_train):
+    def train(self, X_train, Y_train, X_test):
         '''
         output: predicted class: 0, 1, 2
         '''
@@ -68,13 +68,13 @@ class ALGORITHM():
         return msk.cumsum()[-1]/len(msk)
 
     def combine_to_df(self, class_, prob):
-        return pd.DataFrame({'class_': class_, 'prob'; prob})
+        return pd.DataFrame({'class_': class_, 'prob': prob})
 
     def run(self):
         X_train, Y_train, X_test, Y_test = self.prepare_data()
         X_train_scale, X_test_scale = (self.preprocess_X(X_train), self.preprocess_X(X_test))
-        Y_train_matrix = self.preprocess_Y(Y_train)
-        predNN = self.train(X_train_scale, Y_train_matrix)
+        Y_train_matrix, Y_test_matrix = (self.preprocess_Y(Y_train), self.preprocess_Y(Y_test))
+        predNN = self.train(X_train_scale, Y_train_matrix, X_test_scale)
         predLR = self.benchmark(X_train_scale, Y_train, X_test_scale)
         self.combine_to_df(predNN[0], predNN[1])\
                                                 .to_csv('predict_NN', index=False)
