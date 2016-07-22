@@ -107,7 +107,7 @@ class INDICATOR():
         return self.df_y[self.N:].apply(lambda row: \
                                             scalify(\
                                                     row.close / \
-                                                    select_val_b4_date(self.df_finance, row.date, 'eps_in_past_one_year')\
+                                                    select_val_b4_date(self.df_finance, row.date, p_date_, 'eps_in_past_one_year')\
                                                     ), axis=1)
     
     def relative_pe_ratio(pe, avepe):
@@ -116,7 +116,7 @@ class INDICATOR():
     def pb_ratio(self):
         return self.df_y[self.N:].apply(lambda row: scalify(\
                                               self.df_finance[\
-                                              (self.df_finance[p_date_]==lower_bound(self.df_finance, row.date))\
+                                              (self.df_finance[p_date_]==lower_bound(self.df_finance, p_date_, row.date))\
                                               &(~self.df_finance[p_bvps_].isnull())][p_bvps_].values\
                                               / row.close)
 
@@ -126,22 +126,22 @@ class INDICATOR():
         return pb / avepb
     
     def current_cashflow_ratio(self):
-        return self.df_y[self.N:].apply(lambda row: scalify(row.close / select_val_b4_date(self.df_finance, row.date, p_epcf_)), axis=1)
+        return self.df_y[self.N:].apply(lambda row: scalify(row.close / select_val_b4_date(self.df_finance, row.date, p_date_, p_epcf_)), axis=1)
     
     def average_cashflow_ratio(self):
-        return self.df_y[self.N:].apply(lambda row: scalify(row.close / select_val_b4_date(self.df_finance, row.date, 'average_cash_ratio_in_last_one_year')), axis=1)
+        return self.df_y[self.N:].apply(lambda row: scalify(row.close / select_val_b4_date(self.df_finance, row.date, p_date_, 'average_cash_ratio_in_last_one_year')), axis=1)
     
     def current_debt_ratio(self):
-        return self.df_y[self.N:].apply(lambda row: scalify(select_val_b4_date(self.df_finance, row.date, p_asset_liability_ratio_)), axis=1)
+        return self.df_y[self.N:].apply(lambda row: scalify(select_val_b4_date(self.df_finance, row.date, p_date_, p_asset_liability_ratio_)), axis=1)
 
     def average_debt_ratio(self):
-        return self.df_y[self.N:].apply(lambda row: scalify(select_val_b4_date(self.df_finance, row.date, 'average_asset_ratio_in_last_one_year')), axis=1)
+        return self.df_y[self.N:].apply(lambda row: scalify(select_val_b4_date(self.df_finance, row.date, p_date_, 'average_asset_ratio_in_last_one_year')), axis=1)
     
     def market_capitalization(self):
-        return self.df_y[self.N:].apply(lambda row: scalify(row.close * select_val_b4_date(self.df_share, row.date, p_equity_)), axis=1)
+        return self.df_y[self.N:].apply(lambda row: scalify(row.close * select_val_b4_date(self.df_share, row.date, p_date_, p_equity_)), axis=1)
     
     def circulate_stock_value(self):
-        return self.df_y[self.N:].apply(lambda row: scalify(row.close * select_val_b4_date(self.df_share, row.date, p_a_share_)), axis=1)
+        return self.df_y[self.N:].apply(lambda row: scalify(row.close * select_val_b4_date(self.df_share, row.date, p_date_, p_a_share_)), axis=1)
 
     def _eps_within_one_certain_year(self, arr):
         if len(arr) == 1:
@@ -200,7 +200,7 @@ class INDICATOR():
     def _get_trend(self):
         return self.df_y[self.N:-1].apply(lambda row: self._tomorrow_trend(self.df_y.loc[row.name+1, 'close'], row.close), axis=1).values
 
-    def save_indicators(self, turnDate):
+    def save_indicators(self, turnDate, folder):
         # shape(output) should be num_data * (num_ind + 1)
 
         indicators = self.implement_indicator()
@@ -212,25 +212,25 @@ class INDICATOR():
                     'THIS SON OF BITCH HAS NULL VAL',
                     self.id_)
             record_error_msge(self.id_, 'has null val')
-            return
+            return False
 
         trend = self._get_trend()
         trend = trend.reshape(len(trend), 1)
         print (np.shape(indicators))
         print (np.shape(trend))
         matrix = np.hstack((indicators.T, trend))
-
+        print (np.max(self.df_y.date))
         msk = self.df_y[self.N:-1].date < turnDate
         if msk.all() or not msk.any():
             record_error_msge(self.id_, 'fail to split train and test')
-            return 
+            return False
         msk = msk.values
         (train, test) = (matrix[msk], matrix[~msk])
         assert train != test
-        with open('train.txt', 'ab') as f1:            
+        with open(folder+'train.txt', 'ab') as f1:            
             np.savetxt(f1, train)
-        with open('test.txt', 'ab') as f2:
+        with open(folder+'test.txt', 'ab') as f2:
             np.savetxt(f2, test)
-        with open('record.txt', 'a') as f3:
-            f3.write(self.id_+'\t'+len(test)+'\n')
-        return
+        with open(folder+'record.txt', 'a') as f3:
+            f3.write(self.id_+'\t'+str(len(test))+'\n')
+        return True

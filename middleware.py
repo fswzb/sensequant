@@ -2,20 +2,25 @@ import numpy as np
 import pandas as pd 
 from read_stock import READ_DATA
 from ml_model import ALGORITHM
+from asset import ASSET
+from common import normalize_dict
+from backtest import BACKTEST
 
 if __name__ == '__main__':
-    df4test = pd.read_csv('cache.txt')
+    folder = 'cache/'
+    df4test = pd.read_csv(folder+'cache.txt', dtype={'stock_id': str})
     df4test = df4test.drop('index', axis=1)
+    df4test.date = pd.to_datetime(df4test.date)
     algorithm = ALGORITHM()
     algorithm.run()
     
-    predLR = pd.read_csv('predLR')
-    predNN = pd.read_csv('predNN')
+    predLR = pd.read_csv('result/predict_LR')
+    predNN = pd.read_csv('result/predict_NN')
     # restore the abundant last day in the test file 
-    lenRecord = pd.read_csv('record.txt', header=None, sep='\t', dtype={0:str})
-    end = lenRecord[1].cumsum()
-    start = np.hstack((0, end[:-1]))
-    pd.DataFrame({'start': start})
+    lenRecord = pd.read_csv(folder+'record.txt', header=None, sep='\t', dtype={0:str})
+    lenRecord[1] = lenRecord[1].cumsum()
+
+    start = np.hstack((0, lenRecord[1][:-1]))
 
     df_record = pd.concat([lenRecord, pd.DataFrame({'start': start})], axis=1, ignore_index=True)
     df_record = df_record.rename(columns={0: 'stock_id', 1: 'end', 2: 'start'})
@@ -31,4 +36,11 @@ if __name__ == '__main__':
         df4test.loc[msk, 'prob'] = t['prob'].values
         df4test.loc[msk, 'class_'] = t['class_'].values
 
-    hs300_weight = READ_DATA.read_dict(fname='data/weight.txt', symbol=',')
+    reader = READ_DATA('000001')
+    hs300_weight = reader.read_dict(df4test.stock_id, fname='data/weight.txt', symbol=',')
+    hs300_weight = normalize_dict(hs300_weight)
+
+    ass = ASSET(df4test, hs300_weight)
+    assetRecord = ass.new_make_order()
+    bt = BACKTEST(assetRecords)
+    bt.implement_backtest()

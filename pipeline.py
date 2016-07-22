@@ -14,7 +14,7 @@ if __name__ == "__main__":
     # and the full path of the panel data
     STOCK_LIST = [line.rstrip() for line in open('hushen_300_.txt')]
     TURN_DATE = pd.to_datetime('2016-01-01')
-    CACHE_FILE = 'cache.txt'
+    CACHE_FILE = 'cache/cache.txt'
     for stock in STOCK_LIST:
         print (stock)
         reader = READ_DATA(stock)
@@ -42,7 +42,11 @@ if __name__ == "__main__":
         # implement the indicators
         print ("implementing the indicators")
         indicator = INDICATOR(df_tech, df_finance, df_share)
-        indicator.save_indicators(turnDate=TURN_DATE)
+        isSaveIndicator = indicator.save_indicators(turnDate=TURN_DATE, folder='cache/')
+        if not isSaveIndicator:
+            print ('give up... next stock....')
+            continue
+
         if not os.path.isfile(CACHE_FILE):
             df_tech[df_tech.date>=TURN_DATE].reset_index(drop=True).to_csv(CACHE_FILE, index=None)
         else:

@@ -31,15 +31,20 @@ def scalify(l):
     else:
         return l[0]
 
-def lower_bound(df, date):
-    return  np.max(df[dateCol<date][dateCol])
+def lower_bound(df, dateCol, date):
+    return np.max(df[df[dateCol]<date][dateCol])
 
 def select_val_b4_date(df, date, dateCol, valCol):
     # default: the column of the date in the df is dateCol
-    lb = np.max(df[dateCol<date][dateCol])
-    return df[dateCol==lb][valCol].values
+    lb = np.max(df[df[dateCol]<=date][dateCol])
+    return df[df[dateCol]==lb][valCol].values
     
-def record_error_msge(id_, msge, fname='errorLog.txt'):
+def record_error_msge(id_, msge, fname='cache/errorLog.txt'):
     with open(fname, 'a') as f:
         f.write(id_+'\t'+msge+'\n')
 
+def normalize_dict(dict_):
+    sum_ = sum(list(dict_.values()))
+    for k, v in dict_.items():
+        dict_[k] = v / sum_
+    return dict_
