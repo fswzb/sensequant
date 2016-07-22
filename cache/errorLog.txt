@@ -1,0 +1,3 @@
+000024	No finance or share data
+000166	No complex before right
+000166	has null val
