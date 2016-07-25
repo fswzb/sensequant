@@ -1,3 +1,1 @@
-000024	No finance or share data
-000166	No complex before right
-000166	has null val
+000002	fail to split train and test

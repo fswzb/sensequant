@@ -5,6 +5,7 @@ from ml_model import ALGORITHM
 from asset import ASSET
 from common import normalize_dict
 from backtest import BACKTEST
+import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
     folder = 'cache/'
@@ -12,7 +13,7 @@ if __name__ == '__main__':
     df4test = df4test.drop('index', axis=1)
     df4test.date = pd.to_datetime(df4test.date)
     algorithm = ALGORITHM()
-    algorithm.run()
+    algorithm.run(iter_=1000)
     
     predLR = pd.read_csv('result/predict_LR')
     predNN = pd.read_csv('result/predict_NN')
@@ -40,7 +41,13 @@ if __name__ == '__main__':
     hs300_weight = reader.read_dict(df4test.stock_id, fname='data/weight.txt', symbol=',')
     hs300_weight = normalize_dict(hs300_weight)
 
-    ass = ASSET(df4test, hs300_weight)
+    initPrice = reader.read_dict(df4test.stock_id, fname='cache/last_price.txt', symbol='\t')
+    ass = ASSET(df4test, hs300_weight, initPrice)
     assetRecord = ass.new_make_order()
-    bt = BACKTEST(assetRecords)
+
+    fig,ax = plt.subplots()  #create a new figure
+    ax.plot(assetRecord)
+    fig.savefig('return')
+
+    bt = BACKTEST(assetRecord)
     bt.implement_backtest()

@@ -7,28 +7,19 @@ class ASSET():
         
     """ 
 
-    def __init__(self, df, shareDict, upThreshold=0.5, downThreshold=0.5):
+    def __init__(self, df, shareDict, initPrice, upThreshold=0.5, downThreshold=0.5):
         '''
             @df: stock_id, high, low, close, open, date, prob, class
         '''
 
         self._cash = 0
-        self._share = 0
-
         self.df = df
         self.df.loc[:, 'close'] = self.df.close.apply(lambda x: round(x, 2))
         self.df.loc[:, 'open'] = self.df.open.apply(lambda x: round(x, 2))
         self.shareDict = self._get_init_share(shareDict)
         self.sDate = np.min(self.df.date)
-        self.assetRecord = np.array([self._new_measure_asset_val(\
-                                                                 self.df[self.df.date==self.sDate], 
-                                                                 self.sDate, 
-                                                                 self.shareDict,
-                                                                 'open')])
-
-
-    def _get_init_date(self, df):
-        return np.min(df.date)
+        self.initPrice = initPrice
+        self.assetRecord = np.array([])
 
     def _get_init_share(self, shareDict):
         min_ = min(list(shareDict.values()))
@@ -82,18 +73,22 @@ class ASSET():
                                       self._measure_asset_val(row.close)))
         return (assetRecord, returnRecord)
 
-    def _new_measure_asset_val(self, df, date, shareDict, type_):
+    def _new_measure_asset_val(self, df, date, shareDict, cash, type_):
         '''
             @df: same date
         '''
+        print (date)
         if type_ != 'open' and type_ != 'close':
             raise ValueError ('open or close?')
-        idList = list(shareDict.keys())
-        #(df.loc[df.stock_id=='000895', type_])
-        priceList = [scalify(select_val_b4_date(self.df[self.df.stock_id==id_], date, 'date', type_)) for id_ in idList]
-        priceArr = np.array(priceList)
-        shareArr = np.array(list(shareDict.values()))
-        return priceArr @ shareArr
+        sum_ = 0
+        for id_, share in shareDict.items():
+            if id_ in df.stock_id:
+                sum_ += share *\
+                        scalify(select_val_b4_date(self.df[self.df.stock_id==id_], date, 'date', type_))
+            else:
+                sum_ += share * self.initPrice[id_]
+        sum_ += cash
+        return sum_
 
     def _sell_strategy(self, df, shareDict, asset, perc=0.1):
         # choose 10 most likely to down
@@ -106,15 +101,16 @@ class ASSET():
         df_down = df[df.class_==0]
 
         mostLikelyDown = self.choose_10_stock(df_down)
+        num_ = len(mostLikelyDown)
+        if num_ == 0:
+            return (0, shareDict)
         invest = 0
         # sell 
-        eachStockSell = asset * 0.01 / len(mostLikelyDown)
+        eachStockSell = asset * 0.01 / num_
         for stock in mostLikelyDown.iterrows():
             stock = stock[1]
             # check share 
-            share2sell = eachStockSell /\
-                         df.loc[df.stock_id==stock.stock_id, 'open'].values
-            print (share2sell)
+            share2sell = scalify(eachStockSell / stock.open)
             if share2sell <= shareDict[stock.stock_id]:
                 invest -= eachStockSell
                 shareDict[stock.stock_id] -= share2sell
@@ -123,17 +119,18 @@ class ASSET():
                 shareDict[stock.stock_id] = 0 
         return (invest, shareDict)
 
-    def _buy_strategy(self, df, shareDict, cash, perc=0.1):
+    def _buy_strategy(self, df, shareDict, budget, perc=0.1):
         df_up = df[df.class_==2]
         mostLikelyUp = self.choose_10_stock(df_up)
         invest = 0
         for stock in mostLikelyUp.iterrows():
             stock = stock[1]
-            # check if cash is enough
-            invest2pay = 100 * df.loc[df.stock_id==stock.stock_id, 'open'].values
-            if cash > invest2pay:
+            # check if budget is enough
+            invest2pay = 100 * stock.open
+            if budget >= invest2pay:
                 shareDict[stock.stock_id] += 100
                 invest += invest2pay
+                budget -= invest2pay
             else:
                 continue
         return (invest, shareDict)
@@ -141,11 +138,13 @@ class ASSET():
     def new_make_order(self):
         for date, df in self.df.groupby('date'):
             # measure the asset
-            asset = self._new_measure_asset_val(df, date, self.shareDict, 'open')
+            asset = self._new_measure_asset_val(df, date, self.shareDict, self._cash, 'open')
             self.assetRecord = np.hstack((asset, self.assetRecord))
             # make order
             invest, self.shareDict = self._sell_strategy(df, self.shareDict, asset)
             self._cash -= invest
             invest, self.shareDict = self._buy_strategy(df, self.shareDict, self._cash)
             self._cash -= invest
+            assert self._cash >= 0
+            assert (np.array(list(self.shareDict.values())) >= 0).all()
         return self.assetRecord
