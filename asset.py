@@ -11,7 +11,6 @@ class ASSET():
         '''
             @df: stock_id, high, low, close, open, date, prob, class
         '''
-
         self._cash = 0
         self.df = df
         self.df.loc[:, 'close'] = self.df.close.apply(lambda x: round(x, 2))
@@ -82,9 +81,9 @@ class ASSET():
             raise ValueError ('open or close?')
         sum_ = 0
         for id_, share in shareDict.items():
-            if id_ in df.stock_id:
-                sum_ += share *\
-                        scalify(select_val_b4_date(self.df[self.df.stock_id==id_], date, 'date', type_))
+            lastPrice = select_val_b4_date(self.df[self.df.stock_id==id_], date, 'date', type_)
+            if lastPrice:
+                sum_ += share * scalify(lastPrice)
             else:
                 sum_ += share * self.initPrice[id_]
         sum_ += cash
@@ -141,10 +140,11 @@ class ASSET():
             asset = self._new_measure_asset_val(df, date, self.shareDict, self._cash, 'open')
             self.assetRecord = np.hstack((asset, self.assetRecord))
             # make order
-            invest, self.shareDict = self._sell_strategy(df, self.shareDict, asset)
-            self._cash -= invest
-            invest, self.shareDict = self._buy_strategy(df, self.shareDict, self._cash)
-            self._cash -= invest
+            #invest, self.shareDict = self._sell_strategy(df, self.shareDict, asset)
+            #self._cash -= invest
+            #invest, self.shareDict = self._buy_strategy(df, self.shareDict, self._cash)
+            #self._cash -= invest
             assert self._cash >= 0
             assert (np.array(list(self.shareDict.values())) >= 0).all()
+        print (self._cash)
         return self.assetRecord

@@ -13,7 +13,7 @@ if __name__ == '__main__':
     df4test = df4test.drop('index', axis=1)
     df4test.date = pd.to_datetime(df4test.date)
     algorithm = ALGORITHM()
-    algorithm.run(iter_=1000)
+    algorithm.run(iter_=5)
     
     predLR = pd.read_csv('result/predict_LR')
     predNN = pd.read_csv('result/predict_NN')
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     df_record = pd.concat([lenRecord, pd.DataFrame({'start': start})], axis=1, ignore_index=True)
     df_record = df_record.rename(columns={0: 'stock_id', 1: 'end', 2: 'start'})
 
-    df4test['pred'] = np.nan
+    df4test['prob'] = np.nan
     df4test['class_'] = np.nan
     for row in df_record.iterrows():
         row = row[1]

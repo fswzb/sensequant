@@ -184,7 +184,18 @@ class INDICATOR():
         #self.save_img(marketVal, self.id_+'_'+'marketval.png')
         circuMarketVal = self.circulate_stock_value()
         #self.save_img(circuMarketVal, self.id_+'_'+'circulmarketval.png')
-        return np.vstack((slopeNday, percentileNday, returnNday, ema, pe, pb, currCashRat, aveCashRat, currDebtRat, aveDebtRat, marketVal, circuMarketVal))
+        return np.vstack((slopeNday, 
+                          percentileNday, 
+                          returnNday, 
+                          ema, 
+                          pe, 
+                          pb, 
+                          currCashRat, 
+                          aveCashRat, 
+                          currDebtRat, 
+                          aveDebtRat, 
+                          marketVal, 
+                          circuMarketVal))
     
     def _tomorrow_trend(self, close1, close2, threshold=0):
         # close1: tomorrow
@@ -208,9 +219,6 @@ class INDICATOR():
         # filter the null val       
         indicators = indicators[:, :-1]
         if np.isnan(indicators).any():
-            print (
-                    'THIS SON OF BITCH HAS NULL VAL',
-                    self.id_)
             record_error_msge(self.id_, 'has null val')
             return False
 

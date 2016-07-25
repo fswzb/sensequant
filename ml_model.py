@@ -1,6 +1,6 @@
 from keras.models import Model, Sequential
 from keras.layers import Input, Dense, Activation, Dropout
-from keras.regularizers import l2
+from keras.regularizers import l2, l1
 import pandas as pd
 import numpy as np
 from sklearn import linear_model, preprocessing
@@ -35,13 +35,13 @@ class ALGORITHM():
         output: predicted class: 0, 1, 2
         '''
         inputs = Input(shape=(12,))
-        x = Dense(24, activation='relu', W_regularizer=l2(0.01))(inputs)
+        x = Dense(48, activation='sigmoid', W_regularizer=l1(0.01))(inputs)
         drop = Dropout(0.2)(x)
-        prediction = Dense(3, activation='softmax', W_regularizer=l2(0.01))(drop)
+        prediction = Dense(3, activation='sigmoid', W_regularizer=l1(0.01))(drop)
         model = Model(input=inputs, output=prediction)
-        model.compile(optimizer='adadelta',
-                      loss='categorical_crossentropy')
-        model.fit(X_train, Y_train, nb_epoch=iter_)
+        model.compile(optimizer='adagrad',
+                      loss='poisson')
+        model.fit(X_train, Y_train, nb_epoch=iter_, batch_size=100)
         pred = model.predict(X_test)
         return (np.argmax(pred, axis=1),
                 np.max(pred, axis=1))
