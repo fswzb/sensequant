@@ -31,7 +31,7 @@ def scalify(l):
     else:
         return l[0]
 
-def lower_bound(df, dateCol, date):
+def lower_bound(df, date, dateCol):
     return np.max(df[df[dateCol]<date][dateCol])
 
 def select_val_b4_date(df, date, dateCol, valCol):

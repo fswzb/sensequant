@@ -35,9 +35,10 @@ class ALGORITHM():
         output: predicted class: 0, 1, 2
         '''
         inputs = Input(shape=(12,))
-        x = Dense(48, activation='sigmoid', W_regularizer=l1(0.01))(inputs)
-        drop = Dropout(0.2)(x)
-        prediction = Dense(3, activation='sigmoid', W_regularizer=l1(0.01))(drop)
+        x1 = Dense(96, activation='relu', W_regularizer=l1(0.01))(inputs)
+        x2 = Dense(96, activation='relu', W_regularizer=l1(0.01))(x1)
+        #drop = Dropout(0.2)(x)
+        prediction = Dense(3, activation='relu', W_regularizer=l1(0.01))(x2)
         model = Model(input=inputs, output=prediction)
         model.compile(optimizer='adagrad',
                       loss='poisson')
@@ -70,7 +71,7 @@ class ALGORITHM():
     def combine_to_df(self, class_, prob):
         return pd.DataFrame({'class_': class_, 'prob': prob})
 
-    def run(self, iter_=100, folder='result/'):
+    def run(self, iter_, folder='result/'):
         X_train, Y_train, X_test, Y_test = self.prepare_data()
         X_train_scale, X_test_scale = (self.preprocess_X(X_train), self.preprocess_X(X_test))
         Y_train_matrix, Y_test_matrix = (self.preprocess_Y(Y_train), self.preprocess_Y(Y_test))

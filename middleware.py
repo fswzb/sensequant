@@ -13,7 +13,7 @@ if __name__ == '__main__':
     df4test = df4test.drop('index', axis=1)
     df4test.date = pd.to_datetime(df4test.date)
     algorithm = ALGORITHM()
-    algorithm.run(iter_=5)
+    algorithm.run(iter_=500)
     
     predLR = pd.read_csv('result/predict_LR')
     predNN = pd.read_csv('result/predict_NN')
@@ -37,17 +37,19 @@ if __name__ == '__main__':
         df4test.loc[msk, 'prob'] = t['prob'].values
         df4test.loc[msk, 'class_'] = t['class_'].values
 
-    reader = READ_DATA('000001')
+    reader = READ_DATA('000300')
     hs300_weight = reader.read_dict(df4test.stock_id, fname='data/weight.txt', symbol=',')
-    hs300_weight = normalize_dict(hs300_weight)
-
+    #hs300_weight = normalize_dict(hs300_weight)
+    #print (sum(list(hs300_weight.values())))
+    df_tem = reader.fast_read_tech()
     initPrice = reader.read_dict(df4test.stock_id, fname='cache/last_price.txt', symbol='\t')
+    #ass = ASSET(df_tem[df_tem.date>=pd.to_datetime('2016-01-01')], hs300_weight, initPrice)
     ass = ASSET(df4test, hs300_weight, initPrice)
     assetRecord = ass.new_make_order()
+
 
     fig,ax = plt.subplots()  #create a new figure
     ax.plot(assetRecord)
     fig.savefig('return')
-
     bt = BACKTEST(assetRecord)
     bt.implement_backtest()

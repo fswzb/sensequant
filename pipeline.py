@@ -27,7 +27,7 @@ if __name__ == "__main__":
             record_error_msge(stock, 'No finance or share data')
             continue
 
-        df_tech = reader.read_tech()
+        df_tech = reader.fast_read_tech()
 
         if df_tech is None:
             record_error_msge(stock, 'No tech data')
@@ -47,16 +47,30 @@ if __name__ == "__main__":
         if not isSaveIndicator:
             print ('give up... next stock....')
             continue
-        # se
-        with open('cache/last_price.txt', 'a') as f:
-            lastPrice = scalify(select_val_b4_date(df_tech, TURN_DATE, 'date', 'open'))
-            f.write(stock+'\t'+str(lastPrice)+'\n')
-
+        lastPrice = select_val_b4_date(df_tech, TURN_DATE, 'date', 'close')
+        with open ('cache/last_price.txt', 'a') as f:
+            f.write(stock+'\t'+str(scalify(lastPrice))+'\n')
         if not os.path.isfile(CACHE_FILE):
             df_tech[df_tech.date>=TURN_DATE].reset_index(drop=True).to_csv(CACHE_FILE, index=None)
         else:
             with open(CACHE_FILE, 'a') as f:
                 df_tech[df_tech.date>=TURN_DATE].reset_index(drop=True).to_csv(f, index=None, header=False)
         print ('recorded the data')
+
+
+    #train the model
+#    df_tech = train(df_tech)
+
+    # get return of the strategy
+    # first is measured by open
+    # second is by close
+ #   ass = ASSET(df_tech)
+ #   print ("running the strategy")
+ #   assetRecord, returnRecord = ass.make_order()
+
+    # Do backtest then
+ #   print ("doing backtest")
+ #   test = BACKTEST(assetRecord)
+ #   test.implement_backtest()
 
 

@@ -16,9 +16,9 @@ class ASSET():
         self.df.loc[:, 'close'] = self.df.close.apply(lambda x: round(x, 2))
         self.df.loc[:, 'open'] = self.df.open.apply(lambda x: round(x, 2))
         self.shareDict = self._get_init_share(shareDict)
-        self.sDate = np.min(self.df.date)
         self.initPrice = initPrice
         self.assetRecord = np.array([])
+        
 
     def _get_init_share(self, shareDict):
         min_ = min(list(shareDict.values()))
@@ -81,12 +81,13 @@ class ASSET():
             raise ValueError ('open or close?')
         sum_ = 0
         for id_, share in shareDict.items():
-            lastPrice = select_val_b4_date(self.df[self.df.stock_id==id_], date, 'date', type_)
+            lastPrice = select_val_b4_date(df[df.stock_id==id_], date, 'date', type_)
             if lastPrice:
                 sum_ += share * scalify(lastPrice)
             else:
                 sum_ += share * self.initPrice[id_]
         sum_ += cash
+        print (sum_)
         return sum_
 
     def _sell_strategy(self, df, shareDict, asset, perc=0.1):
@@ -137,13 +138,13 @@ class ASSET():
     def new_make_order(self):
         for date, df in self.df.groupby('date'):
             # measure the asset
-            asset = self._new_measure_asset_val(df, date, self.shareDict, self._cash, 'open')
-            self.assetRecord = np.hstack((asset, self.assetRecord))
+            asset = self._new_measure_asset_val(self.df, date, self.shareDict, self._cash, 'close')
+            self.assetRecord = np.hstack((self.assetRecord, asset))
             # make order
-            #invest, self.shareDict = self._sell_strategy(df, self.shareDict, asset)
-            #self._cash -= invest
-            #invest, self.shareDict = self._buy_strategy(df, self.shareDict, self._cash)
-            #self._cash -= invest
+            invest, self.shareDict = self._sell_strategy(df, self.shareDict, asset)
+            self._cash -= invest
+            invest, self.shareDict = self._buy_strategy(df, self.shareDict, self._cash)
+            self._cash -= invest
             assert self._cash >= 0
             assert (np.array(list(self.shareDict.values())) >= 0).all()
         print (self._cash)

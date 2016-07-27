@@ -106,19 +106,20 @@ class INDICATOR():
     def pe_ratio(self):
         return self.df_y[self.N:].apply(lambda row: \
                                             scalify(\
-                                                    row.close / \
-                                                    select_val_b4_date(self.df_finance, row.date, p_date_, 'eps_in_past_one_year')\
+                                                    select_val_b4_date(self.df_finance, row.date, p_date_, 'eps_in_past_one_year')/\
+                                                    row.close\
                                                     ), axis=1)
     
     def relative_pe_ratio(pe, avepe):
         return pe / avepe
     
     def pb_ratio(self):
-        return self.df_y[self.N:].apply(lambda row: scalify(\
-                                              self.df_finance[\
-                                              (self.df_finance[p_date_]==lower_bound(self.df_finance, p_date_, row.date))\
-                                              &(~self.df_finance[p_bvps_].isnull())][p_bvps_].values\
-                                              / row.close)
+        return self.df_y[self.N:].apply(lambda row:  row.close/\
+                                                     scalify(\
+                                                           self.df_finance[\
+                                                           (self.df_finance[p_date_]==lower_bound(self.df_finance, row.date, p_date_))\
+                                                           &(~self.df_finance[p_bvps_].isnull())][p_bvps_].values\
+                                                            )
 
                                         , axis=1)
     
@@ -172,7 +173,7 @@ class INDICATOR():
         #self.save_img(returnNday, self.id_+'_'+'returnNday.png')
         ema = self.construct_ema()
         pe = self.pe_ratio()
-#        self.save_img(pe, self.id_+'_'+'pe.png')
+        self.save_img(pe, self.id_+'_'+'pe.png')
         pb = self.pb_ratio()
 #        self.save_img(pb, self.id_+'_'+'pb.png') 
         currCashRat = self.current_cashflow_ratio()

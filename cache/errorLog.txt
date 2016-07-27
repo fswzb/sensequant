@@ -4,3 +4,27 @@
 001979	No complex before right
 001979	fail to split train and test
 002065	fail to split train and test
+600000	has null val
+600153	has null val
+600170	has null val
+600271	has null val
+600362	has null val
+600446	has null val
+600485	has null val
+600578	has null val
+600663	has null val
+600690	has null val
+600739	has null val
+600873	has null val
+600958	has null val
+600959	has null val
+601018	has null val
+601198	has null val
+601211	has null val
+601669	has null val
+601766	has null val
+601985	No complex before right
+601985	has null val
+601992	has null val
+603885	has null val
+603993	has null val

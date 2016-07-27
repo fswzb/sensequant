@@ -1,6 +1,6 @@
 import pandas as pd 
 import numpy as np
-
+from common import scalify
 from os import listdir
 from os.path import isfile, join
 
@@ -78,7 +78,7 @@ class READ_DATA():
 
         return df_y
 
-    def fast_read_tech(self, path='/home/lcc/sensequant/kline_5minute/data/'):
+    def fast_read_tech(self, path='/home/lcc/sensequant/kline_5minute/alldata/'):
         files = [f for f in listdir(path) if isfile(join(path, f))]
         df_tech = None
         for f in files:
@@ -139,6 +139,18 @@ class READ_DATA():
                 line = line.split(symbol)
                 if line[0] in series.values:
                     dict_[line[0]] = float(line[1])
+                else: 
+                    continue
+        return dict_ 
+
+    def read_dict_tem(self, series, fname, symbol):
+        dict_ = {}
+        with open(fname) as f:
+            for line in f:
+                line = line.rstrip()
+                line = line.split(symbol)
+                if line[0] in series.values:
+                    dict_[line[0]] = float(scalify(line[1]))
                 else: 
                     continue
         return dict_ 
