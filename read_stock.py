@@ -78,6 +78,11 @@ class READ_DATA():
 
         return df_y
 
+    def read_hdf(self, fname):
+        df = pd.read_hdf(fname, self.id_)
+        df = df.drop('index', axis=1)
+        return df
+
     def fast_read_tech(self, path='/home/lcc/sensequant/kline_5minute/alldata/'):
         files = [f for f in listdir(path) if isfile(join(path, f))]
         df_tech = None
@@ -154,3 +159,4 @@ class READ_DATA():
                 else: 
                     continue
         return dict_ 
+

@@ -89,6 +89,7 @@ class INDICATOR():
         return self.df_y.loc[self.N:].apply(lambda row: self._slope_N_day(row['close'], self.df_y.loc[row.name-self.N,'close'], self.N), axis=1)
 
     def construct_percentile_N_day(self):
+        # TODO: if all the price are the same in N days
         return self.df_y.loc[self.N:].apply(lambda row: self._percentile_N_day(row['close'],\
                                                         self.df_y.loc[row.name-self.N:row.name+1, 'high'].max(),\
                                                         self.df_y.loc[row.name-self.N:row.name+1, 'low'].min()\
@@ -136,6 +137,7 @@ class INDICATOR():
         return self.df_y[self.N:].apply(lambda row: scalify(select_val_b4_date(self.df_finance, row.date, p_date_, p_asset_liability_ratio_)), axis=1)
 
     def average_debt_ratio(self):
+        # TODO: if the debt is null
         return self.df_y[self.N:].apply(lambda row: scalify(select_val_b4_date(self.df_finance, row.date, p_date_, 'average_asset_ratio_in_last_one_year')), axis=1)
     
     def market_capitalization(self):
@@ -153,6 +155,7 @@ class INDICATOR():
             return arr[0] - arr[-1] 
 
     def _get_eps_in_one_year(self, df):
+        # TODO: if there a na in the eps in past year
         df = df.reset_index(drop=True)
         if len(df) > 5:
             raise ValueError('Plese take the first five rows as input bitch')
