@@ -10,6 +10,7 @@ import configure
 
 CACHE_DIR = configure.cache_dir
 CACHE_DF_FILE = CACHE_DIR + configure.cache_df_file 
+CACHE_DF_DATASET = configure.cache_df_dataset
 PREDICT_NN_FILE = configure.result_dir + configure.result_NN_predict_file
 PREDICT_LR_FILE = configure.result_dir + configure.result_LR_predict_file
 RECORD_FILE = configure.cache_dir + configure.result_len_record
@@ -18,7 +19,7 @@ LAST_PRICE_FILE = configure.cache_dir+configure.cache_last_price_file
 
 if __name__ == '__main__':
     folder = 'cache/'
-    df4test = pd.read_csv(CACHE_DF_FILE, dtype={'stock_id': str})
+    df4test = pd.read_hdf(CACHE_DF_FILE, CACHE_DF_DATASET)
     df4test = df4test.drop('index', axis=1)
     df4test.date = pd.to_datetime(df4test.date)
     algorithm = ALGORITHM()
