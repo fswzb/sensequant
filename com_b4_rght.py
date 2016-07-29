@@ -1,5 +1,6 @@
 import pandas as pd 
 import numpy as np
+from .common import scalify
 
 p_stock_id = '股票交易代码'
 p_stock_title = '股票名称'

@@ -1,13 +1,17 @@
 import pandas as pd
 import numpy as np
-from read_stock import READ_DATA
-from com_b4_rght import in_day_unit
-from .. import configure
+import itertools
+from src import configure
+import sys 
+# Add the Test Folder path to the sys.path list
+sys.path.append('/home/lcc/sensequant/code')
+# Now you can import your module
+from src.com_b4_rght import  in_day_unit
 
 class get_data():
 
-    def __init__(fname):
-        self.fname = fname
+    def __init__(self, fname):
+        self.fname = configure.tech_hdf_file
 
     def history(self, start_date=None, end_date=None, count=None, filed='avg', stock_list=None):
         '''
@@ -87,9 +91,9 @@ class get_data():
                 df = pd.read_hdf(configure.fundamental_hdf_file, 
                                  df_name, 
                                  columns=columns_list+'stock_id'+'date', 
-                                 where=['date>=pd.to_datetime(%s)'(%start_date), 
-                                        'date<=pd.to_datetime(%s)'(%end_date),
-                                        'stock_id==(%s)'(%stock_id)])
+                                 where=['date>=pd.to_datetime(%s)' % start_date, 
+                                        'date<=pd.to_datetime(%s)' % end_date,
+                                        'stock_id==(%s)'% stock_id])
                 if result.empty:
                     result = df
                 else:
@@ -98,5 +102,5 @@ class get_data():
 
     def get_fundamental_items(self):
         col4check = json.loads(open(configure.colnames_in_each_fundamental_df).read())
-        result = []
-        
+        for k,v in col4check.items():
+            print ('%s: %s'(% k, % v))
