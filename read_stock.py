@@ -83,6 +83,10 @@ class READ_DATA():
         df = df.drop('index', axis=1)
         return df
 
+    def read_stock_fundamental(self, fname, dataset):
+        df = pd.read_hdf(fname, dataset, where=['stock_id==%s' % self.id_])
+        return df
+
     def fast_read_tech(self, path='/home/lcc/sensequant/kline_5minute/alldata/'):
         files = [f for f in listdir(path) if isfile(join(path, f))]
         df_tech = None
