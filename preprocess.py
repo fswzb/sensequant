@@ -1,12 +1,7 @@
 import pandas as pd 
 import numpy as np
-#from sklearn import linear_model
-#import seaborn as sns
-#import matplotlib.pyplot as plt
-#from sklearn import preprocessing
-from itertools import groupby
-from os import listdir
-from os.path import isfile, join
+from .common import scalify
+import os
 
 p_stock_id = '股票交易代码'
 p_stock_title = '股票名称'
@@ -46,38 +41,25 @@ def complex_before_right(df_tech, df_panel):
 
         return df_tech 
 
-def read_panel(id_, fname='/home/lcc/sensequant/kline_5minute/stock_info'):
-    df_panel = pd.read_csv(fname)
-    df_panel = df_panel[(df_panel[p_stock_id]==id_)]
-    df_panel[p_date] = pd.to_datetime(df_panel[p_date])
-    return df_panel
+def in_day_unit(df_tech):
+    groups = df_tech.groupby('date')
+    col = ['stock_id', 'date', 'high', 'low', 'open', 'close']
+    df_y = pd.DataFrame()
+    for name, group in groups:
+        if group.high.max() <= 0:
+            continue
+        stock_id = scalify(df_tech.stock_id[0])
+        date = name
+        high = group.high.max()
+        low = group[group['low']>0].low.min()
+        open_ = group[(group['open'].astype(np.float))>0].iloc[0]['open']
+        close = group.iloc[-1]['close']
+        row = pd.Series([stock_id, date, high, low, open_, close])
+        df_y = df_y.append(row, ignore_index=True)
+    df_y.columns = col     
+    return df_y
 
-def read_finance(fname='/home/lcc/sensequant/kline_5minute/stock_finance.txt'):
-    df_finance = pd.read_csv(fname, dtype={p_stock_id_: str})
-    df_finance = df_finance.drop('每股净资产(元).1', 1)
-    df_finance = df_finance[df_finance[p_stock_id_]==id_].reset_index(drop=True)
-    df_finance[p_date_] = pd.to_datetime(df_finance[p_date_])
-    df_finance['year'] = df_finance[p_date_].apply(lambda time: time.year)
-    df_finance['month'] = df_finance[p_date_].apply(lambda time: time.month)
-    df_finance['day'] = df_finance[p_date_].apply(lambda time: time.day)
-    return df_finance
-
-def read_share(fname='/home/lcc/sensequant/kline_5minute/stock_share.txt'):
-    df_share = pd.read_csv(fname, dtype={p_stock_id_: str})
-    df_share = df_share[df_share[p_stock_id_]==id_]
-    df_share[p_date_] = pd.to_datetime(df_share[p_date_])
-    return df_share 
-
-if __name__ == '__main__':
-    path = '/home/lcc/sensequant/kline_5minute/alldata/'
-    file = [f for f in listdir(path) if isfile(join(path, f))]
-    for f in file:
-        df_tech = pd.read_csv(path+f, dtype={'stock_id': str})
-        df_tech['date'] = pd.to_datetime(df_tech.date, format='%Y%m%d')
-        df_tech[['high', 'low', 'open', 'close']] = df_tech[['high', 'low', 'open', 'close']].apply(lambda x: x/1000)
-        df_panel = read_panel(f.split('.')[0])
-        if df_panel.empty:
-            pass
-        else:
-            df_tech = complex_before_right(df_tech, df_panel)
-        df_tech.to_hdf('after_com.h5', f.split('.')[0])
+def del_files_in_dir(path_to_folder):
+    for f in os.listdir(path_to_folder):
+        os.remove(os.path.join(path_to_folder, f))
+    return 
