@@ -1,6 +1,6 @@
 import pandas as pd 
 import numpy as np
-from .common import scalify
+from common import scalify
 import os
 
 p_stock_id = '股票交易代码'
@@ -60,6 +60,8 @@ def in_day_unit(df_tech):
     return df_y
 
 def del_files_in_dir(path_to_folder):
-    for f in os.listdir(path_to_folder):
-        os.remove(os.path.join(path_to_folder, f))
-    return 
+    files = os.listdir(path_to_folder)
+    if len(files) > 0:
+        for f in files:
+            os.remove(os.path.join(path_to_folder, f))
+        return 

@@ -6,7 +6,7 @@ import sys
 # Add the Test Folder path to the sys.path list
 sys.path.append('/home/lcc/sensequant/code')
 # Now you can import your module
-from src.com_b4_rght import  in_day_unit
+from src.preprocess import in_day_unit
 
 class get_data():
 
@@ -78,6 +78,9 @@ class get_data():
     def get_fundamentals(self, start_date, end_date, stock_id, colname_list):
         
         def has_same_element(l1, l2):
+            '''
+            check whether two list have mutual elements
+            '''
             for e in l1:
                 if e in l2:
                     return True
