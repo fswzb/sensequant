@@ -4,39 +4,6 @@ from common import scalify
 from os import listdir
 from os.path import isfile, join
 
-p_stock_id = '股票交易代码'
-p_stock_title = '股票名称'
-p_cash_divid_bt = '税前派现金额（人民币）（元）（1：X）'
-p_date = '除权日'
-p_cash_divid_at = '税后派现金额（人民币）（元）（1：X）'
-p_stock_divid_rat = '送股比例（1：X）'
-p_increa_trans_rat = '转增比例（1：X）'
-p_reser_rat = '送转比例（1：X）'
-p_allot_prc = '配股价格（元）'
-p_allot_rat = '实际配股比例'
-
-p_exchange_ = '交易所简称'
-p_stock_id_ = '股票代码'
-p_date_ = '时间'
-p_earn_per_share_ = '每股收益(元)'
-p_bvps_ = '每股净资产(元)'
-p_roe_ = '净资产收益率(％)'
-p_net_profit_ = '净利润(万元)'
-p_npgr_ = '净利润增长率(%)'
-p_wroe_ = '加权净资产收益率(%)'
-p_asset_liability_ratio_ = '资产负债比率(%)'
-p_cash_in_net_profit_ = '净利润现金含量(%)'
-p_basic_earn_per_share_ = '基本每股收益(元)'
-p_net_earn_per_share_ = '每股收益-扣除(元)'
-p_dulute_earn_per_share_ = '每股收益-摊薄(元)'
-p_capital_reserve_per_share_ = '每股资本公积金(元)'
-p_udpps_ = '每股未分配利润(元)'
-p_epcf_ = '每股经营现金流量(元)'
-p_operating_net_cash_flow_ = '经营活动现金净流量增长率(%)'
-p_equity_ = '总股本(亿股)'
-p_limit_equity_ = '限售股份(亿股)'
-p_a_share_ = '流通A股(亿股)'
-
 class READ_DATA():
     def __init__(self, stockId):
         self.id_ = stockId
@@ -78,9 +45,11 @@ class READ_DATA():
 
         return df_y
 
-    def read_hdf(self, fname):
-        df = pd.read_hdf(fname, self.id_)
-        df = df.drop('index', axis=1)
+
+    def read_hdf_of_one_stock(self, fname, dataset):
+        df = pd.read_hdf(fname, dataset)
+        df = df[df.stock_id==self.id_].reset_index(drop=True)
+        df.date = pd.to_datetime(df.date)
         return df
 
     def fast_read_tech(self, path='/home/lcc/sensequant/kline_5minute/alldata/'):

@@ -5,12 +5,20 @@ import pandas as pd
 import numpy as np
 from sklearn import linear_model, preprocessing
 from sklearn.metrics import classification_report
+import configure
+
+RESULT_DIR = configure.result_dir
+TRAIN_SET = configure.cache_dir + configure.cache_train_set
+TEST_SET = configure.cache_dir + configure.cache_test_set
+REPORT_FILE = configure.result_dir + configure.result_report
+PREDICT_NN_FILE = configure.result_dir + configure.result_NN_predict_file
+PREDICT_LR_FILE = configure.result_dir + configure.result_LR_predict_file
 
 class ALGORITHM():
     def __init__(self):
         return
 
-    def prepare_data(self, trainFname='cache/train.txt', testFname='cache/test.txt'):
+    def prepare_data(self, trainFname=TRAIN_SET, testFname=TEST_SET):
         trainData = np.loadtxt(trainFname)
         testData = np.loadtxt(testFname)
         (X_train, Y_train) = (trainData[:, :-1], trainData[:, -1])
@@ -56,7 +64,7 @@ class ALGORITHM():
         return (model.predict(X_test),
                 np.max(model.predict_proba(X_test), axis=1))
 
-    def evaluate(self, Y_pred, Y_true, method, fname='result.txt'):
+    def evaluate(self, Y_pred, Y_true, method, fname=REPORT_FILE):
         if method != 'NN' and method != 'LR':
             return ValueError('method just can be either NN or LR') 
         with open(fname, 'w+') as f:
@@ -71,16 +79,16 @@ class ALGORITHM():
     def combine_to_df(self, class_, prob):
         return pd.DataFrame({'class_': class_, 'prob': prob})
 
-    def run(self, iter_, folder='result/'):
+    def run(self, iter_, folder=RESULT_DIR):
         X_train, Y_train, X_test, Y_test = self.prepare_data()
         X_train_scale, X_test_scale = (self.preprocess_X(X_train), self.preprocess_X(X_test))
         Y_train_matrix, Y_test_matrix = (self.preprocess_Y(Y_train), self.preprocess_Y(Y_test))
         predNN = self.train(X_train_scale, Y_train_matrix, X_test_scale, iter_)
         predLR = self.benchmark(X_train_scale, Y_train, X_test_scale)
         self.combine_to_df(predNN[0], predNN[1])\
-                                                .to_csv(folder+'predict_NN', index=False)
+                                                .to_csv(PREDICT_NN_FILE, index=False)
         self.combine_to_df(predLR[0], predLR[1])\
-                                                .to_csv(folder+'predict_LR', index=False)
+                                                .to_csv(PREDICT_LR_FILE, index=False)
 
         accNN = self.evaluate(predNN[0], np.argmax(Y_test_matrix, axis=1), 'NN')
         accLR = self.evaluate(predLR[0], Y_test, 'LR')

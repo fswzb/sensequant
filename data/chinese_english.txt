@@ -1,0 +1,32 @@
+交易所简称: exchange_title
+股票代码: stock_id
+股票名称: stock_title
+时间: date
+每股收益(元): eps 
+每股净资产(元): net_asset_per_share
+净资产收益率(％): roe
+净利润(万元): net_profit
+净利润增长率(%): npgr
+加权净资产收益率(%): wroe
+资产负债比率(%): asset_liability_rat
+净利润现金含量(%): cash_flow_net_profit_rat
+基本每股收益(元): basic_earn_per_share
+每股收益-扣除(元): earn_per_share_after_deduct
+每股收益-摊薄(元): earn_per_share_after_delute
+每股资本公积金(元): capital_reserve_per_share
+每股未分配利润(元): retain_earn_per_share
+每股经营现金流量(元): cash_flow_per_share
+经营活动现金净流量增长率(%): cash_flow_from_operative_act
+总股本(亿股): total_equity
+限售股份(亿股): restircted_equity
+流通A股(亿股): circulate_share
+除权日: date
+税前派现金额（人民币）（元）（1：X）: pt_cash_divid
+税后派现金额（人民币）（元）（1：X）: at_cash_divid
+送股比例（1：X）: bonus_share_rat
+转增比例（1：X）: increase_rat
+送转比例（1：X）: divid_rat
+配股价格（元）: allot_price
+实际配股比例: allot_rat
+
+
