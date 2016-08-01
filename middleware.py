@@ -18,12 +18,11 @@ HUSHEN_300 = configure.hushen_300_weight
 LAST_PRICE_FILE = configure.cache_dir+configure.cache_last_price_file
 
 if __name__ == '__main__':
-    folder = 'cache/'
     df4test = pd.read_hdf(CACHE_DF_FILE, CACHE_DF_DATASET)
-    df4test = df4test.drop('index', axis=1)
+    #df4test = df4test.drop('index', axis=1)
     df4test.date = pd.to_datetime(df4test.date)
     algorithm = ALGORITHM()
-    algorithm.run(iter_=500)
+    algorithm.run(iter_=5)
     
     predLR = pd.read_csv(PREDICT_LR_FILE)
     predNN = pd.read_csv(PREDICT_NN_FILE)
@@ -32,7 +31,7 @@ if __name__ == '__main__':
     lenRecord[1] = lenRecord[1].cumsum()
 
     start = np.hstack((0, lenRecord[1][:-1]))
-
+    
     df_record = pd.concat([lenRecord, pd.DataFrame({'start': start})], axis=1, ignore_index=True)
     df_record = df_record.rename(columns={0: 'stock_id', 1: 'end', 2: 'start'})
 

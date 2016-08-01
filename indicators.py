@@ -12,16 +12,32 @@ class INDICATOR():
         self.df_y = df_y
         self.df_finance = df_finance
         self.df_share = df_share
-        self.df_finance['average_asset_ratio_in_last_one_year'] = df_finance.apply(lambda row: np.average(df_finance.loc[row.name:row.name+4, 'asset_liability_rat'].values), axis=1)
+        self.df_finance['year'] = df_finance['date'].apply(lambda time: time.year)
+        self.df_finance['month'] = df_finance['date'].apply(lambda time: time.month)
+        self.df_finance['day'] = df_finance['date'].apply(lambda time: time.day)
         self.df_finance['average_cash_ratio_in_last_one_year'] = df_finance.apply(lambda row: np.average(df_finance.loc[row.name:row.name+4, 'cash_flow_per_share'].values), axis=1)
         self.df_finance['eps_in_past_one_year'] = self.df_finance.apply(lambda row: self._get_eps_in_one_year(self.df_finance[row.name:row.name+5]), 1)
         self.id_ = scalify(self.df_y.stock_id.unique())
+
+        def fill_na(df_finance, colname):
+            df_finance[colname] = df_finance.apply(lambda row: df_finance.loc[row.name-1, colname]\
+                                                              if np.isnan(row[colname])\
+                                                              else row[colname],
+                                                    axis=1)
+            return df_finance
+
+        self.df_finance = fill_na(self.df_finance, 'eps_in_past_one_year')
+        self.df_finance = fill_na(self.df_finance, 'net_asset_per_share')
+        self.df_finance = fill_na(self.df_finance, 'asset_liability_rat')
+        self.df_finance['average_asset_ratio_in_last_one_year'] = df_finance.apply(lambda row: np.average(df_finance.loc[row.name:row.name+4, 'asset_liability_rat'].values), axis=1)
 
     def _slope_N_day(self, c0, cN, N):
         return ((c0 - cN) / cN) / N
 
     def _percentile_N_day(self, c0, H, L):
-        return (c0 - L) / (H - L)
+        result = (c0 - L) / (H - L)
+        result = 0 if np.isnan(result) else result
+        return result
 
     def _ema(self, c_array):
         day = len(c_array)
@@ -217,7 +233,7 @@ class INDICATOR():
         msk = msk.values
         (train, test) = (matrix[msk], matrix[~msk])
         assert train != test
-        with open(folder+'train.txt', 'ab') as f1:            
+        with open(folder+'train.txt', 'ab') as f1:
             np.savetxt(f1, train)
         with open(folder+'test.txt', 'ab') as f2:
             np.savetxt(f2, test)

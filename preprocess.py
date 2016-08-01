@@ -17,13 +17,16 @@ p_allot_rat = '实际配股比例'
 def adjust_price(price, cash_divid_at, reser_rat):
     return (price - float(cash_divid_at)) / (1 + float(reser_rat))
 
+def remove_index_col(df):
+    return df.drop('index', axis=1)
+
 def complex_before_right(df_tech, df_panel):
     # set index
     df_tech = df_tech.reset_index(drop=False)
     #df_benchmark = df_tech[df_tech['stock_id']=='399300']  
-    df_panel = df_panel[(df_panel[p_cash_divid_at]!='\\N') | (df_panel[p_cash_divid_at]!='\\N')]
+    df_panel = df_panel[(df_panel['at_cash_divid']!='\\N') | (df_panel['at_cash_divid']!='\\N')]
     
-    df = df_panel[[p_stock_id, p_cash_divid_bt, p_cash_divid_at, p_reser_rat, p_date]]
+    df = df_panel[['stock_id', 'pt_cash_divid', 'at_cash_divid', 'divid_rat', 'date']]
     for values in df.itertuples():
         stock_id = values[1]
         cash_divid_bt = values[2]
@@ -38,7 +41,7 @@ def complex_before_right(df_tech, df_panel):
             c = 0
         criteria = (df_tech['stock_id'] == stock_id) & (df_tech['date'] < date)
         df_tech.loc[criteria, ['high', 'low', 'open', 'close']] = df_tech[criteria][['high', 'low', 'open', 'close']].apply(adjust_price, args=(c, reser_rat,))
-
+        df_tech = remove_index_col(df_tech)
         return df_tech 
 
 def in_day_unit(df_tech):

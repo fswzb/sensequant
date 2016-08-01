@@ -141,11 +141,11 @@ class ASSET():
             asset = self._new_measure_asset_val(self.df, date, self.shareDict, self._cash, 'close')
             self.assetRecord = np.hstack((self.assetRecord, asset))
             # make order
-            invest, self.shareDict = self._sell_strategy(df, self.shareDict, asset)
-            self._cash -= invest
-            invest, self.shareDict = self._buy_strategy(df, self.shareDict, self._cash)
-            self._cash -= invest
-            assert self._cash >= 0
-            assert (np.array(list(self.shareDict.values())) >= 0).all()
+            #invest, self.shareDict = self._sell_strategy(df, self.shareDict, asset)
+            #self._cash -= invest
+            #invest, self.shareDict = self._buy_strategy(df, self.shareDict, self._cash)
+            #self._cash -= invest
+            #assert self._cash >= 0
+            #assert (np.array(list(self.shareDict.values())) >= 0).all()
         print (self._cash)
         return self.assetRecord

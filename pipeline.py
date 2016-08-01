@@ -2,11 +2,7 @@ import numpy as np
 import pandas as pd 
 
 from read_stock import READ_DATA
-<<<<<<< HEAD
 from preprocess import adjust_price, complex_before_right, in_day_unit, del_files_in_dir
-=======
-from com_b4_rght import adjust_price, complex_before_right, in_day_unit
->>>>>>> 3ba1c448eb4778b28af195b8ffb82763bcc2e264
 from indicators import INDICATOR
 #from ml_model import train
 from asset import ASSET
@@ -17,27 +13,20 @@ import h5py
 import configure
 
 TURN_DATE = pd.to_datetime('2016-01-01')
-<<<<<<< HEAD
 CACHE_DIR = configure.cache_dir
 CACHE_FILE = configure.cache_dir + configure.cache_df_file
 LAST_PRICE_FILE = configure.cache_dir + configure.cache_last_price_file
-=======
 CACHE_FILE = configure.cache_dir+configure.cache_df_file
 LAST_PRICE_FILE = configure.cache_dir+configure.cache_last_price_file
->>>>>>> 3ba1c448eb4778b28af195b8ffb82763bcc2e264
 FUNDAMENTAL_FILE = configure.fundamental_hdf_file
 TECH_FILE = configure.tech_hdf_file
 CACHE_DF_DATASET = configure.cache_df_dataset 
 
 if __name__ == "__main__":
-<<<<<<< HEAD
+
 
     del_files_in_dir(CACHE_DIR)
 
-=======
-    # set the directory of all the 5 minute bar files
-    # and the full path of the panel data
->>>>>>> 3ba1c448eb4778b28af195b8ffb82763bcc2e264
     with h5py.File(configure.tech_hdf_file, 'r') as hf:
         STOCK_LIST = list(hf.keys())
 
@@ -46,10 +35,7 @@ if __name__ == "__main__":
         reader = READ_DATA(stock)
         print ("reading data...")
         df_finance = reader.read_hdf_of_one_stock(FUNDAMENTAL_FILE, 'stock_finance')
-        df_finance['year'] = df_finance['date'].apply(lambda time: time.year)
-        df_finance['month'] = df_finance['date'].apply(lambda time: time.month)
-        df_finance['day'] = df_finance['date'].apply(lambda time: time.day)
-
+ 
         df_share = reader.read_hdf_of_one_stock(FUNDAMENTAL_FILE, 'stock_share')
 
         if df_finance.empty or df_share.empty:
@@ -83,8 +69,8 @@ if __name__ == "__main__":
 
         with open (LAST_PRICE_FILE, 'a') as f:
             f.write(stock+'\t'+str(scalify(lastPrice))+'\n')
-        
-        df_tech.to_hdf(CACHE_FILE, CACHE_DF_DATASET, format='table', append=True)
+
+        df_tech[df_tech.date>=TURN_DATE].to_hdf(CACHE_FILE, CACHE_DF_DATASET, format='table', append=True)
         #if not os.path.isfile(CACHE_FILE):
         #    df_tech[df_tech.date>=TURN_DATE].reset_index(drop=True).to_hdf(CACHE_FILE, CACHE_DF_DATASET)
         #else:
